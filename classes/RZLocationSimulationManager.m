@@ -7,9 +7,6 @@
 //
 
 #import "RZLocationSimulationManager.h"
-#import <CoreLocation/CoreLocation.h>
-
-static const NSDateFormatter* df;
 
 @interface RZOffsetLocation ()
 
@@ -40,14 +37,14 @@ static const NSDateFormatter* df;
 {
     self = [super init];
     if ( self != nil ) {
-        self.coordinate = CLLocationCoordinate2DMake(latitude, longitude);
-        self.altitude = altitude;
-        self.horizontalAccuracy = hAccuracy;
-        self.verticalAccuracy = vAccuracy;
-        self.course = course;
-        self.speed = speed;
-        self.timestamp = [self.class dateFromTimestamp:timestamp];
-        self.timeSinceRouteBegan = [self.timestamp timeIntervalSinceDate:firstLocationDate]/playBackSpeed;
+        _coordinate = CLLocationCoordinate2DMake(latitude, longitude);
+        _altitude = altitude;
+        _horizontalAccuracy = hAccuracy;
+        _verticalAccuracy = vAccuracy;
+        _course = course;
+        _speed = speed;
+        _timestamp = [self.class dateFromTimestamp:timestamp];
+        _timeSinceRouteBegan = [_timestamp timeIntervalSinceDate:firstLocationDate]/playBackSpeed;
     }
     return self;
 }
@@ -65,29 +62,31 @@ static const NSDateFormatter* df;
                                         timestamp:locationTimeStamp];
 }
 
++ (NSDateFormatter *)dateFormatter {
+    static NSDateFormatter *s_dateFormatter = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        s_dateFormatter = [[NSDateFormatter alloc] init];
+        s_dateFormatter.dateFormat = @"yyyy-MM-dd HH:mm:ss.SSS";
+    });
+    return s_dateFormatter;
+}
+
 + (NSDate *)dateFromTimestamp:(NSString *)timestamp
 {
-    if ( df == nil ) {
-        df = [[NSDateFormatter alloc] init];
-        df.dateFormat = @"yyyy-MM-dd HH:mm:ss.SSS";
-    }
-    return [df dateFromString:timestamp];
+    return [[self dateFormatter] dateFromString:timestamp];
 }
 
 + (NSString *)dateToTimestamp:(NSDate *)date
 {
-    if ( df == nil ) {
-        df = [[NSDateFormatter alloc] init];
-        df.dateFormat = @"yyyy-MM-dd HH:mm:ss.SSS";
-    }
-    return [df stringFromDate:date];
+    return [[self dateFormatter] stringFromDate:date];
 }
 @end
 
 
 @interface RZLocationSimulationManager ()
 
-@property (strong, nonatomic) NSArray *locationArray;
+@property (copy, nonatomic) NSArray *locationArray;
 @property (strong, nonatomic) NSTimer *dispatchTimer;
 @property (strong, nonatomic) CLLocation *nextLocation;
 @property (assign, nonatomic) NSInteger currentPointIndex;
@@ -105,16 +104,12 @@ static const NSDateFormatter* df;
 {
     self = [super init];
     if ( self != nil ) {
-        self.currentPointIndex = 0;
-        self.isUpdating = NO;
-        self.playbackSpeed = ( playbackSpeed > 0 ? playbackSpeed : 1 );
+        _currentPointIndex = 0;
+        _isUpdating = NO;
+        _playbackSpeed = ( playbackSpeed > 0 ? playbackSpeed : 1 );
         [self loadJSON:jsonData];
     }
     return self;
-}
-
-- (void)dealloc
-{
 }
 
 - (void)startUpdatingLocation
@@ -184,8 +179,6 @@ static const NSDateFormatter* df;
 - (void)dispatchLocation
 {
     if ( self.isUpdating ) {
-        NSDate *lastLocationDate = self.nextLocation.timestamp;
-
         [self.delegate locationManager:self didUpdateLocations:@[self.nextLocation]];
 
         if ( self.currentPointIndex < self.locationArray.count ) {
@@ -203,6 +196,5 @@ static const NSDateFormatter* df;
 - (CLLocation *)location {
     return self.nextLocation;
 }
-
 
 @end
