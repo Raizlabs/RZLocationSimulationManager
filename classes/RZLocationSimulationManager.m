@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Raizlabs. All rights reserved.
 //
 
-#import "RZLocationManager.h"
+#import "RZLocationSimulationManager.h"
 #import <CoreLocation/CoreLocation.h>
 
 static const NSDateFormatter* df;
