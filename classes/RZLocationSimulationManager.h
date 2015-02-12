@@ -30,7 +30,9 @@
 
 @interface RZLocationSimulationManager : CLLocationManager
 
--(instancetype)initWithPlaybackSpeed:(double)playbackSpeed json:(NSData*)jsonData;
--(void)startSimulator;
+
+- (instancetype)initWithPlaybackSpeed:(double)playbackSpeed json:(NSData*)jsonData;
+
+- (void)startSimulator;
 
 @end
