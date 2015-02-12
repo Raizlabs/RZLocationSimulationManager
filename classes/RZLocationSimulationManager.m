@@ -126,7 +126,7 @@
 - (void)startSimulator {
 
     self.currentPointIndex = 0;
-    self.nextLocation = self.locationArray[ 0 ];
+    self.nextLocation = [self locationAtIndex:0];
     [self dispatchLocation];
 }
 
